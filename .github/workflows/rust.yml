@@ -1,27 +1,44 @@
-name: Rust
+name: Build and Release
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-env:
-  CARGO_TERM_COLOR: always
+    tags:
+      - 'v*.*.*'
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --verbose
-
-          runs-on: windows-2022
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --verbose
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Rust 工具链
+        uses: actions/setup-rust@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+      - name: 构建项目
+        run: cargo build --release
+
+      - name: 创建发布版本
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: 上传构建产物
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: |
+            target/release/$(if [ $RUNNER_OS == 'Windows' ]; then echo 'PhiSaveSong.exe'; else echo 'PhiSaveSong'; fi)
+          asset_name: $(if [ $RUNNER_OS == 'Windows' ]; then echo 'PhiSaveSong.exe'; else echo 'PhiSaveSong'; fi)
+          asset_content_type: application/octet-stream
