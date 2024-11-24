@@ -9,4 +9,4 @@
 
 python脚本执行方法是将脚本放在上述的exe输出的csv文件同目录下，会输出更加详细的分难度统计
 
-（此项目依赖于Catrong/phi-plugin所生成的data/saveData文件夹）
+（此项目依赖于[Catrong/phi-plugin](https://github.com/Catrong/phi-plugin)所生成的data/saveData文件夹）
